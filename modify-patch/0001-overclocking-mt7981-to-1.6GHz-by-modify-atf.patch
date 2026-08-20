@@ -56,9 +56,7 @@
 +	
  	/* Enable Infra bus divider */
  	if (skip_dcm_setting == 0) {
- 		mmio_setbits_32(VDNR_DCM_TOP_INFRA_CTRL_0, 0x2);
-   
-===================================================================
+ 		mmio_setbits_32(VDNR_DCM_TOP_INFRA_CTRL_0, 0x2);  
 --- a/atf-20220606-637ba581b/plat/mediatek/mt7981/drivers/pll/pll.h
 +++ b/atf-20220606-637ba581b/plat/mediatek/mt7981/drivers/pll/pll.h
 @@ -64,7 +64,8 @@
@@ -70,8 +68,6 @@
 +#define ARMPLL_CON1_ALL0        0xFF000000
  #define SCP_AXICK_DCM_DIS_EN	BIT(0)
  #define SCP_AXICK_26M_SEL_EN	BIT(4)
- 
-===================================================================
 --- a/atf-20231013-0ea67d76a/plat/mediatek/mt7981/drivers/pll/pll.c
 +++ b/atf-20231013-0ea67d76a/plat/mediatek/mt7981/drivers/pll/pll.c
 @@ -70,8 +70,14 @@
@@ -131,8 +127,6 @@
  	/* Enable Infra bus divider */
  	if (skip_dcm_setting == 0) {
  		mmio_setbits_32(VDNR_DCM_TOP_INFRA_CTRL_0, 0x2);
-   
-===================================================================
 --- a/atf-20231013-0ea67d76a/plat/mediatek/mt7981/drivers/pll/pll.h
 +++ b/atf-20231013-0ea67d76a/plat/mediatek/mt7981/drivers/pll/pll.h
 @@ -64,7 +64,8 @@
