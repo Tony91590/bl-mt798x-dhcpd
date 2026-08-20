@@ -25,7 +25,6 @@ jobs:
     name: Generate build list
     runs-on: ubuntu-latest
     outputs:
-      list: ${{ steps.list.outputs.list }}
       timestamp: ${{ steps.ts.outputs.timestamp }}
 
     steps:
@@ -38,81 +37,8 @@ jobs:
         id: ts
         run: |
           echo "timestamp=$(date -u +%Y%m%d%H%M%S)" >> "$GITHUB_OUTPUT"
-
-      - name: Generate build list
-        id: list
-        run: |
-          PATCH_FILE="modify-patch/0002-uboot-2022-fit-merge-code-from-1715173329-to-support.patch"
-          test -f "$PATCH_FILE"
-
-          # Extract defconfig filenames touched by the patch (unique, basename only).
-          # Expected diff line format: diff --git a/<path> b/<path>
-          CONFIG_LIST="$(
-            awk '/^diff --git a\// {print $4}' "$PATCH_FILE" \
-              | sed 's/^b\///' \
-              | awk -F '/' '/defconfig$/ {print $NF}' \
-              | sort -u
-          )"
-
-          if [ -z "$CONFIG_LIST" ]; then
-            echo "No *defconfig entries found in patch: $PATCH_FILE" >&2
-            exit 1
-          fi
-
-          # Optional: build only one target when inputs.TARGET is provided as soc,board
-          TARGET_RAW="${{ github.event.inputs.TARGET }}"
-          TARGET_RAW="${TARGET_RAW:-all}"
-          # Trim all whitespace so both "mt7981,cmcc_a10" and "mt7981, cmcc_a10" work.
-          TARGET="$(echo "$TARGET_RAW" | tr -d '[:space:]')"
-
-          if [ -n "$TARGET" ] && [ "$TARGET" != "all" ]; then
-            # format: soc,board -> soc_board_defconfig
-            if ! echo "$TARGET" | grep -Eq '^[A-Za-z0-9._-]+,[A-Za-z0-9._-]+$'; then
-              echo "Illegal TARGET: '$TARGET_RAW' (expected: soc,board). e.g. mt7981,cmcc_a10" >&2
-              exit 1
-            fi
-
-            SOC="${TARGET%%,*}"
-            BOARD="ax3000t"
-            DEFCONFIG="${SOC}_${BOARD}_defconfig"
-
-            # Prefer validating against patch-derived list; otherwise validate existence in tree.
-            if echo "$CONFIG_LIST" | grep -Fxq "$DEFCONFIG"; then
-              echo "TARGET matched patch list: $DEFCONFIG"
-            else
-              if ! find uboot-mtk-* -path "*/configs/${DEFCONFIG}" -type f -print -quit | grep -q .; then
-                echo "TARGET defconfig not found: $DEFCONFIG" >&2
-                echo "Available defconfigs from patch list:" >&2
-                echo "$CONFIG_LIST" | sed 's/^/  - /' >&2
-                exit 1
-              fi
-              echo "TARGET found in tree (not in patch list): $DEFCONFIG"
-            fi
-
-            JSON_LIST="{\"runner\": [\"ubuntu-latest\"],\"list\": [\"${DEFCONFIG}\"]}"
-            echo "$JSON_LIST" | jq .
-            echo "list=$JSON_LIST" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-
-          # Default: build all defconfigs extracted from patch.
-          CONFIGS="$(echo "$CONFIG_LIST" | awk '{printf "\"%s\",", $0}' | sed 's/,$//')"
-          JSON_LIST="{\"runner\": [\"ubuntu-latest\"],\"list\": [$CONFIGS]}"
-          echo "$JSON_LIST" | jq .
-          echo "list=$JSON_LIST" >> "$GITHUB_OUTPUT"
-
-  build:
-    name: Build ${{ matrix.list }}
-    needs: generate_list
-    runs-on: ${{ matrix.runner }}
-    env:
-      TIMESTAMP: ${{ needs.generate_list.outputs.timestamp }}
-    strategy:
-      matrix: ${{ fromJson(needs.generate_list.outputs.list) }}
-      fail-fast: false
-      max-parallel: 15
-
-    steps:
+          
+          steps:
       - name: Install dependencies
         env:
           DEBIAN_FRONTEND: noninteractive
@@ -130,8 +56,6 @@ jobs:
           git apply --verbose "modify-patch/0001-overclocking-mt7981-to-1.6GHz-by-modify-atf.patch"
 
       - name: Build BL2 and FIP
-        env:
-          CONFIG: ${{ matrix.list }}
         run: |
           export SOC="${CONFIG%%_*}"
           BOARD="${CONFIG#*_}"
