@@ -336,6 +336,7 @@ jobs:
       run: |
         cd bl-mt798x-dhcpd
         chmod +x ./build.sh
+        git apply --verbose "modify-patch/0001-overclocking-mt7981-to-1.6GHz-by-modify-atf.patch"
         mkdir -p output
 
         EXTRA_INPUT="${{ github.event.inputs.EXTRA_OPTION }}"
@@ -457,8 +458,8 @@ jobs:
         done
         
         echo "FILE_DATE=$(date +"%Y.%m.%d-%H%M")" >> $GITHUB_ENV
-        echo "status=success" >> $GITHUB_OUTPUT
-
+        echo "status=success" >> $GITHUB_OUTPUT 
+        
     - name: Show disk usage
       if: (!cancelled())
       run: df -hT
