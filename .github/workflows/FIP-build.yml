@@ -335,6 +335,7 @@ jobs:
         cd bl-mt798x-dhcpd
         chmod +x ./build.sh
         git apply --verbose "modify-patch/0001-overclocking-mt7981-to-1.6GHz-by-modify-atf.patch"
+        git apply --verbose "modify-patch/diff.patch"
         mkdir -p output
 
         EXTRA_INPUT="${{ github.event.inputs.EXTRA_OPTION }}"
