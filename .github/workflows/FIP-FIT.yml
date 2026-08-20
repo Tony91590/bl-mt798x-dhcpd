@@ -73,7 +73,7 @@ jobs:
             fi
 
             SOC="${TARGET%%,*}"
-            BOARD="${TARGET#*,}"
+            BOARD="ax3000t"
             DEFCONFIG="${SOC}_${BOARD}_defconfig"
 
             # Prefer validating against patch-derived list; otherwise validate existence in tree.
@@ -124,10 +124,6 @@ jobs:
       - name: Checkout source tree
         uses: actions/checkout@v4
 
-      - name: Apply required patches
-        run: |
-          git apply --verbose "modify-patch/0002-uboot-2022-fit-merge-code-from-1715173329-to-support.patch"
-
       - name: Apply overclocking BL2 patch (1.6GHz)
         if: ${{ inputs.OC_BL2 }}
         run: |
@@ -139,7 +135,7 @@ jobs:
         run: |
           export SOC="${CONFIG%%_*}"
           BOARD="${CONFIG#*_}"
-          export BOARD="${BOARD%_*}"
+          export BOARD="ax3000t"
           export VERSION="2022"
           mkdir -p "output"
           SOC="$SOC" BOARD="$BOARD" VERSION="$VERSION" ./build.sh 2>&1 | tee "output/build.log"
