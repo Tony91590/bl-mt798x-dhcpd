@@ -19,7 +19,7 @@ on:
         default: 'ax3000t'
         type: string
       FIP_VERSION: 
-        description: 'FIP versions (comma-separated, e.g. 2022,2023,2024/all)'
+        description: 'FIP versions (comma-separated, e.g. 2022,2023,all)'
         required: true
         default: '2023'
         type: string
