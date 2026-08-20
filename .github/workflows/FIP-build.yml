@@ -36,7 +36,7 @@ on:
       EXTRA_OPTION:
         description: 'Extra option'
         required: false
-        default: 'default'
+        default: 'multi_layout'
         type: choice
         options:
           - default
