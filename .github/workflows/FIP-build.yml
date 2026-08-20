@@ -21,7 +21,7 @@ on:
       FIP_VERSION: 
         description: 'FIP versions (comma-separated, e.g. 2022,2023,2024/all)'
         required: true
-        default: '2024'
+        default: '2023'
         type: string
       REPO_URL:
         description: 'Source repository'
@@ -77,7 +77,6 @@ env:
   uboot22: uboot-mtk-20220606
   atf23: atf-20231013-0ea67d76a
   uboot23: uboot-mtk-20230718-09eda825
-  atf24: atf-20240117-bacca82a8
 
 jobs:
   build:
@@ -221,7 +220,6 @@ jobs:
           case "$v" in
             2022) echo "${{ env.atf22 }}" "${{ env.uboot22 }}" ;;
             2023) echo "${{ env.atf23 }}" "${{ env.uboot23 }}" ;;
-            2024) echo "${{ env.atf24 }}" "${{ env.uboot23 }}" ;;
             *) echo "" "" ;;
           esac
         }
