@@ -251,7 +251,7 @@ echo "======================================================================"
 
 mkdir -p "output"
 if [ -f "$ATF_DIR/build/${SOC}/release/fip.bin" ]; then
-	FIP_NAME="fip-${SOC}_${BOARD}_${VERSION}-${AUTHOR}-dhcpd"
+	FIP_NAME="fip-${SOC}_${BOARD}_${VERSION}-dhcpd"
 	if [ "$fixedparts" = "1" ]; then
 		FIP_NAME="${FIP_NAME}-fixed-parts"
 	fi
