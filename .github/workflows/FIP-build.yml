@@ -83,14 +83,17 @@ jobs:
     runs-on: ubuntu-latest
 
     container:
-      image:  ubuntu:20.04
+      image: ubuntu:20.04
+
+    defaults:
+      run:
+        shell: bash
 
     permissions:
       contents: write
 
     steps:
     - name: Configuration check
-      shell: bash
       run: |
         set -euo pipefail
 
@@ -110,10 +113,24 @@ jobs:
         fi
 
         if [ "${{ github.event.inputs.pub_release }}" = "false" ]; then
-          echo "UPLOAD_RELEASE=false" >> $GITHUB_ENV
+          echo "UPLOAD_RELEASE=false" >> "$GITHUB_ENV"
         fi
 
+    - name: Bootstrap environment
+      env:
+        DEBIAN_FRONTEND: noninteractive
+      run: |
+        set -euo pipefail
+
+        apt-get update -qq
+        apt-get install -y -qq \
+          ca-certificates \
+          git
+
+        git --version
+
     - name: Clean disk space (local1)
+
       if: github.event.inputs.save_disk == 'true' && !cancelled()
       env:
         DEBIAN_FRONTEND: noninteractive
@@ -123,23 +140,33 @@ jobs:
     - name: Checkout source
       run: |
         set -euo pipefail
+
         mkdir -p /workdir
-        chown $USER:$GROUPS /workdir
+        chown "$(id -u):$(id -g)" /workdir
         cd /workdir
-        df -hT $PWD
+
+        df -hT "$PWD"
 
         REPO_URL_IN="$REPO_URL"
         REPO_BRANCH_IN="$REPO_BRANCH_INPUT"
-
         REPO_REF="$REPO_BRANCH_IN"
 
         echo "Using source: $REPO_URL_IN (ref: $REPO_REF)"
-        git clone --depth 1 --branch "$REPO_REF" "$REPO_URL_IN" bl-mt798x-dhcpd
+
+        git clone \
+          --depth 1 \
+          --branch "$REPO_REF" \
+          "$REPO_URL_IN" \
+          bl-mt798x-dhcpd
 
         SOURCE_SHA="$(git -C bl-mt798x-dhcpd rev-parse HEAD)"
+
         echo "REPO_BRANCH=$REPO_REF" >> "$GITHUB_ENV"
         echo "SOURCE_SHA=$SOURCE_SHA" >> "$GITHUB_ENV"
-        ln -sf /workdir/bl-mt798x-dhcpd $GITHUB_WORKSPACE/bl-mt798x-dhcpd
+
+        ln -sf \
+          /workdir/bl-mt798x-dhcpd \
+          "$GITHUB_WORKSPACE/bl-mt798x-dhcpd"
 
     - name: Initialiser l'environnement
       env:
@@ -171,6 +198,7 @@ jobs:
           unzip \
           file \
           wget \
+          rename \
           zstd \
           gcc-aarch64-linux-gnu
 
