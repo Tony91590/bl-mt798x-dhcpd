@@ -19,7 +19,7 @@ on:
         default: 'ax3000t'
         type: string
       FIP_VERSION: 
-        description: 'FIP versions (comma-separated, e.g. 2022,2023,2024,all)'
+        description: 'FIP versions (comma-separated, e.g. 2022,2023,2024/all)'
         required: true
         default: '2023'
         type: string
@@ -271,7 +271,7 @@ jobs:
 
         # Parse the list of versions to process based on FIP_INPUT
         if [ "$FIP_INPUT" = "all" ]; then
-          SUPPORTED_VERSIONS=("2022" "2023")
+          SUPPORTED_VERSIONS=("2022" "2023" "2024")
           echo "Detected 'all', will parse: ${SUPPORTED_VERSIONS[*]}"
         else
           IFS=',' read -ra SUPPORTED_VERSIONS <<< "$FIP_INPUT"
@@ -283,6 +283,7 @@ jobs:
           case "$v" in
             2022) echo "${{ env.atf22 }}" "${{ env.uboot22 }}" ;;
             2023) echo "${{ env.atf23 }}" "${{ env.uboot23 }}" ;;
+            2024) echo "${{ env.atf24 }}" "${{ env.uboot23 }}" ;;
             *) echo "" "" ;;
           esac
         }
