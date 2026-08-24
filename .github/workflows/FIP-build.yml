@@ -118,13 +118,13 @@ jobs:
       env:
         DEBIAN_FRONTEND: noninteractive
       run: |
-        sudo rm -rf /etc/apt/sources.list.d/* /usr/share/dotnet /usr/local/lib/android /opt/ghc
+        rm -rf /etc/apt/sources.list.d/* /usr/share/dotnet /usr/local/lib/android /opt/ghc
 
     - name: Checkout source
       run: |
         set -euo pipefail
-        sudo mkdir -p /workdir
-        sudo chown $USER:$GROUPS /workdir
+        mkdir -p /workdir
+        chown $USER:$GROUPS /workdir
         cd /workdir
         df -hT $PWD
 
