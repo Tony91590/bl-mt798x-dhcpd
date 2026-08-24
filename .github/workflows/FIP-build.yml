@@ -259,7 +259,7 @@ jobs:
       run: |
         set -euo pipefail
         cd bl-mt798x-dhcpd
-        git clone -b test https://github.com/Tony91590/bl-mt798x.git tmp_imm
+        git clone -b old https://github.com/Tony91590/bl-mt798x-dhcpd.git tmp_imm
         cp -r tmp_imm/atf-20240117-bacca82a8 ./
         rm -rf tmp_imm
         mkdir -p model_lists
