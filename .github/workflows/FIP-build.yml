@@ -77,14 +77,13 @@ env:
   uboot22: uboot-mtk-20220606
   atf23: atf-20231013-0ea67d76a
   uboot23: uboot-mtk-20230718-09eda825
-
+  
 jobs:
   build:
-    runs-on: ${{ matrix.os }}
-    strategy:
-          matrix:
-            os:
-              - ubuntu-22.04
+    runs-on: ubuntu-latest
+
+    container:
+      image:  ubuntu:20.04
 
     permissions:
       contents: write
