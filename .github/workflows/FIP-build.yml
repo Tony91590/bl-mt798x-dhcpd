@@ -31,7 +31,7 @@ on:
       REPO_BRANCH:
         description: 'Repository branch'
         required: true
-        default: 'old-version'
+        default: 'new'
         type: string
       EXTRA_OPTION:
         description: 'Extra option'
