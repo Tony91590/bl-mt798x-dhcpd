@@ -31,7 +31,7 @@ on:
       REPO_BRANCH:
         description: 'Repository branch'
         required: true
-        default: 'new'
+        default: 'old'
         type: string
       EXTRA_OPTION:
         description: 'Extra option'
@@ -259,9 +259,6 @@ jobs:
       run: |
         set -euo pipefail
         cd bl-mt798x-dhcpd
-        git clone -b old https://github.com/Tony91590/bl-mt798x-dhcpd.git tmp_imm
-        cp -r tmp_imm/atf-20240117-bacca82a8 ./
-        rm -rf tmp_imm
         mkdir -p model_lists
 
         FIP_INPUT="${{ github.event.inputs.FIP_VERSION }}"
