@@ -201,8 +201,6 @@ jobs:
       env:
         DEBIAN_FRONTEND: noninteractive
       run: |
-        set -euo pipefail
-
         # Configure timezone
         ln -fs /usr/share/zoneinfo/$TZ /etc/localtime || true
         echo "$TZ" > /etc/timezone || true
