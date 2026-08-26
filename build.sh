@@ -1,7 +1,5 @@
 #!/bin/sh
 
-AUTHOR="Yuzhii"
-
 TOOLCHAIN=aarch64-linux-gnu-
 
 # Default selection
