@@ -5,7 +5,7 @@
 # All rights reserved.
 #
 # This file is part of the project bl-mt798x-dhcpd
-# You may not use, copy, modify or distribute this file except in compliance with the license agreement.
+# You may not use, copy, modify or distribute this file except under the license agreement.
 #
 name: FIP Build
 
@@ -18,21 +18,25 @@ on:
         required: true
         default: 'ax3000t'
         type: string
-      FIP_VERSION: 
+
+      FIP_VERSION:
         description: 'FIP versions (comma-separated, e.g. 2022,2023,2024/all)'
         required: true
         default: '2024'
         type: string
+
       REPO_URL:
         description: 'Source repository'
         required: true
         default: 'https://github.com/Tony91590/bl-mt798x-dhcpd'
         type: string
+
       REPO_BRANCH:
         description: 'Repository branch'
         required: true
         default: 'old'
         type: string
+
       EXTRA_OPTION:
         description: 'Extra option'
         required: false
@@ -42,25 +46,36 @@ on:
           - default
           - multi_layout
           - dis_fixed_mtdparts
+
       GEN_BL2:
         description: 'Generate BL2 binary(v22/23 only)'
         required: false
         default: true
         type: boolean
+
+      OVERCLOCK:
+        description: 'Enable overclock'
+        required: false
+        default: false
+        type: boolean
+
       ssh:
         description: 'SSH connection to Actions'
         required: false
         default: 'false'
+
       save_disk:
         description: 'Free up disk space(build environment)'
         required: false
         default: 'false'
         type: boolean
+
       pub_release:
         description: 'Publish to GitHub Release'
         required: false
         default: 'true'
         type: boolean
+
 #  schedule:
 #    - cron: 0 16 * * *
 
@@ -72,13 +87,14 @@ env:
   UPLOAD_FIRMWARE: true
   UPLOAD_RELEASE: true
   TZ: Asia/Shanghai
+
   # ATF and U-Boot versions mapping/path
   atf22: atf-20220606-637ba581b
   uboot22: uboot-mtk-20220606
   atf23: atf-20231013-0ea67d76a
   uboot23: uboot-mtk-20230718-09eda825
   atf24: atf-20240117-bacca82a8
-  
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -94,6 +110,7 @@ jobs:
       contents: write
 
     steps:
+
     - name: Configuration check
       run: |
         set -euo pipefail
@@ -101,7 +118,8 @@ jobs:
         EXTRA_IN="${{ github.event.inputs.EXTRA_OPTION }}"
 
         case "$EXTRA_IN" in
-          default|multi_layout|dis_fixed_mtdparts) ;;
+          default|multi_layout|dis_fixed_mtdparts)
+            ;;
           *)
             echo "Error: invalid EXTRA_OPTION: '$EXTRA_IN' (expected default/multi_layout/dis_fixed_mtdparts)" >&2
             exit 1
@@ -109,12 +127,21 @@ jobs:
         esac
 
         FIP_INPUT="${{ github.event.inputs.FIP_VERSION }}"
+
         if [[ "$FIP_INPUT" =~ ^(.+)-(mt798[0-9]+)$ ]]; then
           FIP_INPUT="${BASH_REMATCH[1]}"
         fi
 
         if [ "${{ github.event.inputs.pub_release }}" = "false" ]; then
           echo "UPLOAD_RELEASE=false" >> "$GITHUB_ENV"
+        fi
+
+        if [ "${{ github.event.inputs.OVERCLOCK }}" = "true" ]; then
+          echo "OVERCLOCK_ENABLED=true" >> "$GITHUB_ENV"
+          echo "Overclock: ENABLED"
+        else
+          echo "OVERCLOCK_ENABLED=false" >> "$GITHUB_ENV"
+          echo "Overclock: DISABLED"
         fi
 
     - name: Bootstrap environment
@@ -124,6 +151,7 @@ jobs:
         set -euo pipefail
 
         apt-get update -qq
+
         apt-get install -y -qq \
           ca-certificates \
           git
@@ -131,7 +159,6 @@ jobs:
         git --version
 
     - name: Clean disk space (local1)
-
       if: github.event.inputs.save_disk == 'true' && !cancelled()
       env:
         DEBIAN_FRONTEND: noninteractive
@@ -144,6 +171,7 @@ jobs:
 
         mkdir -p /workdir
         chown "$(id -u):$(id -g)" /workdir
+
         cd /workdir
 
         df -hT "$PWD"
@@ -171,16 +199,18 @@ jobs:
 
     - name: Initialiser l'environnement
       env:
-          DEBIAN_FRONTEND: noninteractive
+        DEBIAN_FRONTEND: noninteractive
       run: |
-          # Configure timezone
-          ln -fs /usr/share/zoneinfo/$TZ /etc/localtime || true
-          echo "$TZ" > /etc/timezone || true
+        set -euo pipefail
 
-          # Basic tools required by the build
-          apt-get update -qq
+        # Configure timezone
+        ln -fs /usr/share/zoneinfo/$TZ /etc/localtime || true
+        echo "$TZ" > /etc/timezone || true
 
-          apt-get install -y -qq \
+        # Basic tools required by the build
+        apt-get update -qq
+
+        apt-get install -y -qq \
           ca-certificates \
           curl \
           git \
@@ -203,46 +233,46 @@ jobs:
           zstd \
           gcc-aarch64-linux-gnu
 
-          ln -sf /usr/bin/python3 /usr/bin/python
+        ln -sf /usr/bin/python3 /usr/bin/python
 
-          echo "Python version:"
-          python --version
-  
-          # Clean unnecessary repositories/directories
-          rm -rf /etc/apt/sources.list.d/*
-          rm -rf /usr/share/dotnet
-          rm -rf /usr/local/lib/android
-          rm -rf /opt/ghc
+        echo "Python version:"
+        python --version
 
-          apt-get update -qq
+        # Clean unnecessary repositories/directories
+        rm -rf /etc/apt/sources.list.d/*
+        rm -rf /usr/share/dotnet
+        rm -rf /usr/local/lib/android
+        rm -rf /opt/ghc
 
-          ##------Build Prepare------
-          apt-get install -y -qq gcc-aarch64-linux-gnu
-          export CROSS_COMPILE=aarch64-linux-gnu-
-          ##-------------------------
+        apt-get update -qq
 
-          # Cleanup
-          apt-get autoremove -y --purge
-          apt-get clean
-          rm -rf /var/lib/apt/lists/*
+        ##------Build Prepare------
+        apt-get install -y -qq gcc-aarch64-linux-gnu
+        export CROSS_COMPILE=aarch64-linux-gnu-
+        ##-------------------------
 
-          # Create work directory
-          mkdir -p /workdir
-          chown "$USER":"$GROUPS" /workdir || true
+        # Cleanup
+        apt-get autoremove -y --purge
+        apt-get clean
+        rm -rf /var/lib/apt/lists/*
 
-          # Check environment
-          echo "===== Ubuntu version ====="
-          cat /etc/os-release
+        # Create work directory
+        mkdir -p /workdir
+        chown "$USER":"$GROUPS" /workdir || true
 
-          echo "===== GCC ====="
-          aarch64-linux-gnu-gcc --version
+        # Check environment
+        echo "===== Ubuntu version ====="
+        cat /etc/os-release
 
-          echo "===== CROSS_COMPILE ====="
-          echo "$CROSS_COMPILE"
+        echo "===== GCC ====="
+        aarch64-linux-gnu-gcc --version
+
+        echo "===== CROSS_COMPILE ====="
+        echo "$CROSS_COMPILE"
 
     - name: SSH connection management
       uses: P3TERX/ssh2actions@v1.0.0
-      if: (github.event.inputs.ssh == 'true' && github.event.inputs.ssh  != 'false') || contains(github.event.action, 'ssh')
+      if: (github.event.inputs.ssh == 'true' && github.event.inputs.ssh != 'false') || contains(github.event.action, 'ssh')
       env:
         TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
@@ -250,7 +280,9 @@ jobs:
     - name: Parse FIP version input
       run: |
         IFS=',' read -ra VERSIONS <<< "${{ github.event.inputs.FIP_VERSION }}"
+
         echo "Parsed versions:"
+
         for version in "${VERSIONS[@]}"; do
           echo "Processing version: $version"
         done
@@ -258,48 +290,71 @@ jobs:
     - name: Parse model lists
       run: |
         set -euo pipefail
+
         cd bl-mt798x-dhcpd
+
         mkdir -p model_lists
 
         FIP_INPUT="${{ github.event.inputs.FIP_VERSION }}"
+
         SOC_FILTER=""
+
         if [[ "$FIP_INPUT" =~ ^(.+)-(mt798[0-9]+)$ ]]; then
           FIP_INPUT="${BASH_REMATCH[1]}"
           SOC_FILTER="${BASH_REMATCH[2]}"
+
           echo "Detected platform filter: $SOC_FILTER (will only generate model lists for that platform)"
         fi
 
         # Parse the list of versions to process based on FIP_INPUT
         if [ "$FIP_INPUT" = "all" ]; then
           SUPPORTED_VERSIONS=("2022" "2023" "2024")
+
           echo "Detected 'all', will parse: ${SUPPORTED_VERSIONS[*]}"
         else
           IFS=',' read -ra SUPPORTED_VERSIONS <<< "$FIP_INPUT"
+
           echo "Will parse selected: ${SUPPORTED_VERSIONS[*]}"
         fi
 
         version_to_dirs() {
           local v="$1"
+
           case "$v" in
-            2022) echo "${{ env.atf22 }}" "${{ env.uboot22 }}" ;;
-            2023) echo "${{ env.atf23 }}" "${{ env.uboot23 }}" ;;
-            2024) echo "${{ env.atf24 }}" "${{ env.uboot23 }}" ;;
-            *) echo "" "" ;;
+            2022)
+              echo "${{ env.atf22 }}" "${{ env.uboot22 }}"
+              ;;
+            2023)
+              echo "${{ env.atf23 }}" "${{ env.uboot23 }}"
+              ;;
+            2024)
+              echo "${{ env.atf24 }}" "${{ env.uboot23 }}"
+              ;;
+            *)
+              echo "" ""
+              ;;
           esac
         }
 
         collect_models() {
           local atf_dir="$1"
           local uboot_dir="$2"
+
           local atf_list
           local uboot_list
+
           atf_list=$(mktemp)
           uboot_list=$(mktemp)
 
           if [ -d "$atf_dir/configs" ]; then
-            find -L "$atf_dir/configs" -maxdepth 1 -type f -name 'mt798*_defconfig' | while read -r f; do
+            find -L "$atf_dir/configs" \
+              -maxdepth 1 \
+              -type f \
+              -name 'mt798*_defconfig' |
+            while read -r f; do
               base=$(basename "$f")
               base_no_ext=$(echo "$base" | sed -E 's/_defconfig$//')
+
               if [ -n "$base_no_ext" ]; then
                 echo "$base_no_ext" >> "$atf_list"
               fi
@@ -307,9 +362,14 @@ jobs:
           fi
 
           if [ -d "$uboot_dir/configs" ]; then
-            find -L "$uboot_dir/configs" -maxdepth 1 -type f -name 'mt798*_defconfig' | while read -r f; do
+            find -L "$uboot_dir/configs" \
+              -maxdepth 1 \
+              -type f \
+              -name 'mt798*_defconfig' |
+            while read -r f; do
               base=$(basename "$f")
               base_no_ext=$(echo "$base" | sed -E 's/_defconfig$//')
+
               if [ -n "$base_no_ext" ]; then
                 echo "$base_no_ext" >> "$uboot_list"
               fi
@@ -319,37 +379,53 @@ jobs:
           if [ -s "$atf_list" ] && [ -s "$uboot_list" ]; then
             sort -u "$atf_list" > "${atf_list}.sorted"
             sort -u "$uboot_list" > "${uboot_list}.sorted"
-            comm -12 "${atf_list}.sorted" "${uboot_list}.sorted"
+
+            comm -12 \
+              "${atf_list}.sorted" \
+              "${uboot_list}.sorted"
           fi
 
-          rm -f "$atf_list" "$uboot_list" "${atf_list}.sorted" "${uboot_list}.sorted"
+          rm -f \
+            "$atf_list" \
+            "$uboot_list" \
+            "${atf_list}.sorted" \
+            "${uboot_list}.sorted"
         }
 
         for version in "${SUPPORTED_VERSIONS[@]}"; do
           read -r ATF_DIR UBOOT_DIR < <(version_to_dirs "$version")
+
           if [ -z "$ATF_DIR" ] || [ -z "$UBOOT_DIR" ]; then
             echo "Unknown version mapping: $version, skip"
             continue
           fi
+
           models=$(collect_models "$ATF_DIR" "$UBOOT_DIR" || true)
+
           if [ -z "$models" ]; then
             echo "No available models found for $version: missing ATF/UBoot defconfig intersection, skipping"
             continue
           fi
+
           if [ -n "$SOC_FILTER" ]; then
             models=$(echo "$models" | grep -E "^${SOC_FILTER}_" || true)
+
             if [ -z "$models" ]; then
               echo "Platform $SOC_FILTER has no available models in $version, skipping"
               continue
             fi
           fi
+
           list_file="model_lists/model_list_${version}.txt"
+
           echo "$models" | sort -u > "$list_file"
+
           echo "Generated model list: $list_file"
         done
 
         echo "Generated model list files:"
         ls -l model_lists/
+
         for f in model_lists/model_list_*.txt; do
           echo "List contents - $f:"
           cat "$f" || echo "(empty)"
@@ -362,6 +438,7 @@ jobs:
       if: github.event.inputs.GEN_BL2 == 'true' && !cancelled()
       run: |
         set -euo pipefail
+
         cd bl-mt798x-dhcpd
 
         MODEL="${{ github.event.inputs.MODEL }}"
@@ -369,81 +446,156 @@ jobs:
 
         try_patch_defconfig() {
           local path="$1"
+
           if [ -f "$path" ]; then
             if grep -q '^CONFIG_TARGET_FIP_NO_SEC_BOOT=y$' "$path"; then
-              sed -i 's/^CONFIG_TARGET_FIP_NO_SEC_BOOT=y$/CONFIG_TARGET_ALL_NO_SEC_BOOT=y/' "$path"
+              sed -i \
+                's/^CONFIG_TARGET_FIP_NO_SEC_BOOT=y$/CONFIG_TARGET_ALL_NO_SEC_BOOT=y/' \
+                "$path"
+
               echo "Patched: $path"
             else
               echo "Skip (no target line): $path"
             fi
+
             return 0
           fi
+
           return 1
         }
 
         # Patch defconfig for ATF 22/23 versions
-        for atf_dir in "${{ env.atf22 }}" "${{ env.atf23 }}"; do
+        for atf_dir in \
+          "${{ env.atf22 }}" \
+          "${{ env.atf23 }}"; do
+
           echo "Checking ATF dir: $atf_dir"
+
           if try_patch_defconfig "${atf_dir}/configs/${DEFCONF}"; then
             echo "Successfully patched defconfig file: ${atf_dir}/configs/${DEFCONF}"
           else
-            echo "Warning: defconfig not found for $atf_dir (searched configs/, atf/configs/)"
+            echo "Warning: defconfig not found for $atf_dir"
           fi
         done
+
         echo "status=success" >> $GITHUB_OUTPUT
         echo "GEN_BL2=1" >> $GITHUB_ENV
 
     - name: Build FIP
       id: compile
       run: |
+        set -euo pipefail
+
         cd bl-mt798x-dhcpd
+
+        echo "========================================"
+        echo "FIP BUILD CONFIGURATION"
+        echo "========================================"
+        echo "Model: ${{ github.event.inputs.MODEL }}"
+        echo "FIP Version: ${{ github.event.inputs.FIP_VERSION }}"
+        echo "Extra option: ${{ github.event.inputs.EXTRA_OPTION }}"
+        echo "Generate BL2: ${{ github.event.inputs.GEN_BL2 }}"
+        echo "Overclock: ${{ github.event.inputs.OVERCLOCK }}"
+        echo "========================================"
+
+        # ---------------------------------------------------------
+        # Base patch
+        # ---------------------------------------------------------
+        echo "Applying base patch: modify-patch/diff.patch"
+
+        if [ ! -f "modify-patch/diff.patch" ]; then
+          echo "ERROR: modify-patch/diff.patch not found"
+          exit 1
+        fi
+
         git apply --verbose "modify-patch/diff.patch"
+
+        # ---------------------------------------------------------
+        # Optional overclock patch
+        # ---------------------------------------------------------
+        if [ "${{ github.event.inputs.OVERCLOCK }}" = "true" ]; then
+          echo "========================================"
+          echo "Overclock ENABLED"
+          echo "Applying: modify-patch/diff-oc.patch"
+          echo "========================================"
+
+          if [ ! -f "modify-patch/diff-oc.patch" ]; then
+            echo "ERROR: modify-patch/diff-oc.patch not found"
+            exit 1
+          fi
+
+          git apply --verbose "modify-patch/diff-oc.patch"
+
+          echo "Overclock patch successfully applied."
+        else
+          echo "========================================"
+          echo "Overclock DISABLED"
+          echo "Skipping: modify-patch/diff-oc.patch"
+          echo "========================================"
+        fi
+
         chmod +x ./build.sh
+
         mkdir -p output
 
         EXTRA_INPUT="${{ github.event.inputs.EXTRA_OPTION }}"
-        
+
         FIP_INPUT="${{ github.event.inputs.FIP_VERSION }}"
+
         SOC_FILTER=""
+
         if [[ "$FIP_INPUT" =~ ^(.+)-(mt798[0-9]+)$ ]]; then
           FIP_INPUT="${BASH_REMATCH[1]}"
           SOC_FILTER="${BASH_REMATCH[2]}"
+
           echo "Detected platform filter: $SOC_FILTER (will only build models for that platform)"
         fi
 
         # Parse the list of versions to process based on FIP_INPUT
         if [ "$FIP_INPUT" = "all" ]; then
           SUPPORTED_VERSIONS=("2022" "2023" "2024")
+
           echo "Detected 'all', will build: ${SUPPORTED_VERSIONS[*]}"
         else
           IFS=',' read -ra SUPPORTED_VERSIONS <<< "$FIP_INPUT"
+
           echo "Will build selected: ${SUPPORTED_VERSIONS[*]}"
         fi
 
         MODEL_INPUT="${{ github.event.inputs.MODEL }}"
+
         if [[ "$MODEL_INPUT" =~ ^all-(mt798[0-9]+)$ ]]; then
           MODEL_INPUT="all"
+
           if [ -z "$SOC_FILTER" ]; then
             SOC_FILTER="${BASH_REMATCH[1]}"
           fi
+
           echo "Detected model input with platform filter: $SOC_FILTER (MODEL=all-mt798x)"
         fi
 
         # Compile each version and cache outputs in separate temp directories
         for version in "${SUPPORTED_VERSIONS[@]}"; do
+
           echo "Preparing FIP for version ${version}..."
+
           list_file="model_lists/model_list_${version}.txt"
+
           if [ ! -s "$list_file" ]; then
             echo "Model list file not found ($list_file), skipping $version"
             continue
           fi
+
           models=$(cat "$list_file" || true)
+
           if [ -z "$models" ]; then
             echo "Model list empty ($version), skipping"
             continue
           fi
+
           if [ -n "$SOC_FILTER" ]; then
             models=$(echo "$models" | grep -E "^${SOC_FILTER}_" || true)
+
             if [ -z "$models" ]; then
               echo "Platform $SOC_FILTER has no available models in $version, skipping"
               continue
@@ -454,18 +606,23 @@ jobs:
           echo "$models" | tr '\n' ' '
           echo
 
-          # Compile all if MODEL_INPUT=all, otherwise filter by model name suffix
+          # Compile all if MODEL_INPUT=all,
+          # otherwise filter by model name suffix
           if [ "$MODEL_INPUT" = "all" ]; then
             BUILD_MODELS="$models"
           else
             BUILD_MODELS=""
+
             while read -r entry; do
               [ -z "$entry" ] && continue
+
               model_name="${entry#*_}"
+
               if [ "$model_name" = "$MODEL_INPUT" ]; then
                 BUILD_MODELS+="$entry "
               fi
             done <<< "$models"
+
             if [ -z "$BUILD_MODELS" ]; then
               echo "Model $MODEL_INPUT not found in version $version, skipping"
               continue
@@ -473,6 +630,7 @@ jobs:
           fi
 
           for entry in $BUILD_MODELS; do
+
             soc="${entry%%_*}"
             model_name="${entry#*_}"
 
@@ -492,8 +650,24 @@ jobs:
                 ;;
             esac
 
-            echo "Building FIP for version ${version} (SOC: $soc, model: $model_name)..."
-            BOARD="$model_name" VERSION=${version} MULTI_LAYOUT="$MULTI_LAYOUT" FIXED_MTDPARTS="$FIXED_MTDPARTS" SILENT=Y ./build.sh 2>&1 | tee "output/build-${soc}-${model_name}-${version}.log"
+            echo "========================================"
+            echo "Building FIP"
+            echo "Version: $version"
+            echo "SOC: $soc"
+            echo "Model: $model_name"
+            echo "Multi layout: $MULTI_LAYOUT"
+            echo "Fixed MTD parts: $FIXED_MTDPARTS"
+            echo "Overclock: ${{ github.event.inputs.OVERCLOCK }}"
+            echo "========================================"
+
+            BOARD="$model_name" \
+            VERSION="${version}" \
+            MULTI_LAYOUT="$MULTI_LAYOUT" \
+            FIXED_MTDPARTS="$FIXED_MTDPARTS" \
+            SILENT=Y \
+            ./build.sh 2>&1 |
+            tee "output/build-${soc}-${model_name}-${version}.log"
+
             build_rc=${PIPESTATUS[0]}
 
             if [ "$build_rc" -ne 0 ]; then
@@ -502,6 +676,7 @@ jobs:
           done
 
           mkdir -p "temp_output_${version}"
+
           if [ -d "output" ]; then
             cp -r output/* "temp_output_${version}/" || true
             rm -rf output/*
@@ -510,6 +685,7 @@ jobs:
 
         # Merge all version outputs into the output directory
         mkdir -p output
+
         for version in "${SUPPORTED_VERSIONS[@]}"; do
           cp -r "temp_output_${version}/"* output/ || true
         done
@@ -518,55 +694,75 @@ jobs:
         for version in "${SUPPORTED_VERSIONS[@]}"; do
           rm -rf "temp_output_${version}"
         done
-        
+
         echo "FILE_DATE=$(date +"%Y.%m.%d-%H%M")" >> $GITHUB_ENV
-        echo "status=success" >> $GITHUB_OUTPUT 
-        
+        echo "status=success" >> $GITHUB_OUTPUT
+
     - name: Show disk usage
       if: (!cancelled())
-      run: df -hT
+      run: |
+        df -hT
 
     - name: Organize files and rename
       id: organize
       if: env.UPLOAD_FIRMWARE == 'true' && !cancelled()
-      run: | 
+      run: |
         cd bl-mt798x-dhcpd
+
         # Get current timestamp
         TIMESTAMP=$(date +"%Y%m%d-%H%M%S")
-        # Mark custom subnet (append _customnet suffix, then timestamp)
+
+        # Mark custom subnet
+        # append _customnet suffix, then timestamp
         if [ "${{ env.CUSTOM_NET }}" = "1" ]; then
           for dir in output output_gpt; do
             if [ -d "$dir" ]; then
               for file in "$dir"/*; do
                 [ -f "$file" ] || continue
-                mv "$file" "${file%.*}_customnet.${file##*.}"
+
+                mv "$file" \
+                  "${file%.*}_customnet.${file##*.}"
               done
             fi
           done
         fi
+
         # Rename files in output directory
         if [ -d "output" ]; then
-          rename "s/(.*)\.(.*)/\$1_${TIMESTAMP}.\$2/" output/*
+          rename \
+            "s/(.*)\.(.*)/\$1_${TIMESTAMP}.\$2/" \
+            output/*
         fi
+
         # Rename files in output_gpt directory
         if [ -d "output_gpt" ]; then
-          rename "s/(.*)\.(.*)/\$1_${TIMESTAMP}.\$2/" output_gpt/*
+          rename \
+            "s/(.*)\.(.*)/\$1_${TIMESTAMP}.\$2/" \
+            output_gpt/*
         fi
-        # Move files to upload directory (binaries, logs, GPT, model lists)
+
+        # Move files to upload directory
         mkdir -p upload
+
         if [ -d "output" ]; then
           cp -r output/* upload/ || true
         fi
+
         if [ -d "output_gpt" ]; then
           cp -r output_gpt/* upload/ || true
         fi
+
         if [ -d "model_lists" ]; then
           cp -r model_lists/* upload/ || true
         fi
 
-        # Compress all logs into a single tar.gz and remove original logs
+        # Compress all logs into a single tar.gz
+        # and remove original logs
         if ls upload/build-*.log >/dev/null 2>&1; then
-          tar -czf upload/build-logs_${TIMESTAMP}.tar.gz upload/build-*.log
+          tar -czf \
+            upload/build-logs_${TIMESTAMP}.tar.gz \
+            upload/build-*.log
+
           rm -f upload/build-*.log
         fi
 
@@ -595,23 +791,35 @@ jobs:
 
         echo "- Extra options: ${{ github.event.inputs.EXTRA_OPTION }}" >> release.txt
 
+        # Overclock status
+        if [ "${{ github.event.inputs.OVERCLOCK }}" = "true" ]; then
+          echo "- Overclock: enabled" >> release.txt
+        else
+          echo "- Overclock: disabled" >> release.txt
+        fi
+
         if [ "${{ github.event.inputs.EXTRA_OPTION }}" = "dis_fixed_mtdparts" ]; then
           echo "- FIXED_MTDPARTS disabled" >> release.txt
+
         elif [ "${{ github.event.inputs.EXTRA_OPTION }}" = "multi_layout" ]; then
           echo "- MULTI_LAYOUT enabled" >> release.txt
         fi
+
         if [ "${{ github.event.inputs.GEN_BL2 }}" = "true" ]; then
           echo "- ATF22/23 BL2 generation enabled" >> release.txt
         fi
+
         if [ "${{ github.event.inputs.MODEL }}" = "all" ]; then
           echo "- Model list files for each version output (MODEL=all)" >> release.txt
         fi
+
         echo "- Build time: ${{ env.FILE_DATE }}" >> release.txt
 
         echo "" >> release.txt
         echo "---" >> release.txt
         echo "" >> release.txt
         echo "**PLEASE SEE THE README FOR USAGE INSTRUCTIONS AND DISCLAIMERS.**" >> release.txt
+
         echo "release_tag=${{ env.FILE_DATE }}-${{ env.UPLOAD_TAG_NAME }}" >> $GITHUB_OUTPUT
         echo "status=success" >> $GITHUB_OUTPUT
 
@@ -625,4 +833,3 @@ jobs:
         name: ${{ env.FILE_DATE }}-${{ env.UPLOAD_TAG_NAME }}
         tag_name: ${{ steps.tag.outputs.release_tag }}
         body_path: release.txt
-
