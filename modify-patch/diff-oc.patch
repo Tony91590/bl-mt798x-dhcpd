@@ -74,8 +74,6 @@
  #define SCP_AXICK_DCM_DIS_EN	BIT(0)
  #define SCP_AXICK_26M_SEL_EN	BIT(4)
  
-diff --git a/atf-20231013-0ea67d76a/plat/mediatek/mt7981/drivers/pll/pll.c b/atf-20231013-0ea67d76a/plat/mediatek/mt7981/drivers/pll/pll.c
-index 588aacf2228..1ac9cf9f8a9 100644
 --- a/atf-20231013-0ea67d76a/plat/mediatek/mt7981/drivers/pll/pll.c
 +++ b/atf-20231013-0ea67d76a/plat/mediatek/mt7981/drivers/pll/pll.c
 @@ -70,8 +70,14 @@ unsigned int mtk_get_cpu_freq()
