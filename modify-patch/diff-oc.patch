@@ -140,8 +140,6 @@ index 588aacf2228..1ac9cf9f8a9 100644
  	mmio_write_32(0x1001B1C4, 0x3);
  }
 +
-diff --git a/atf-20231013-0ea67d76a/plat/mediatek/mt7981/drivers/pll/pll.h b/atf-20231013-0ea67d76a/plat/mediatek/mt7981/drivers/pll/pll.h
-index 498c00f4172..e8504f8322f 100644
 --- a/atf-20231013-0ea67d76a/plat/mediatek/mt7981/drivers/pll/pll.h
 +++ b/atf-20231013-0ea67d76a/plat/mediatek/mt7981/drivers/pll/pll.h
 @@ -64,7 +64,8 @@
