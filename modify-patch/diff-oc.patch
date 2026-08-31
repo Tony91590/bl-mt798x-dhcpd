@@ -39,11 +39,6 @@
  
  	mmio_setbits_32(NET2PLL_CON0, 0x114);
  	mmio_setbits_32(MMPLL_CON0, 0x124);
-@@ -154,3 +165,4 @@ void mtk_pll_init(int skip_dcm_setting)
- 	mmio_write_32(0x1001B1C0, 0x7FFEFCE3);
- 	mmio_write_32(0x1001B1C4, 0x3);
- }
-+
 --- a/atf-20220606-637ba581b/plat/mediatek/mt7981/drivers/pll/pll.h
 +++ b/atf-20220606-637ba581b/plat/mediatek/mt7981/drivers/pll/pll.h
 @@ -64,7 +64,8 @@
