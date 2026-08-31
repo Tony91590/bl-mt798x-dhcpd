@@ -1,3 +1,54 @@
+From 30792649547f27d25942bfe3c2d2c14cbcfff38e Mon Sep 17 00:00:00 2001
+From: padavanonly <thl@tanghaili>
+Date: Fri, 2 Aug 2024 12:46:31 +0800
+Subject: [PATCH] add 7981 oc
+
+---
+ .../configs/mt7981_360t7_defconfig            |  2 +-
+ .../mt7981_cmcc_rax3000m-emmc_defconfig       |  2 +-
+ .../configs/mt7981_cmcc_rax3000m_defconfig    |  2 +-
+ .../plat/mediatek/mt7981/drivers/pll/pll.c    | 26 ++++++++++++++-----
+ .../plat/mediatek/mt7981/drivers/pll/pll.h    |  3 ++-
+ .../plat/mediatek/mt7981/drivers/pll/pll.c    | 26 ++++++++++++++-----
+ .../plat/mediatek/mt7981/drivers/pll/pll.h    |  3 ++-
+ 7 files changed, 45 insertions(+), 19 deletions(-)
+
+diff --git a/atf-20220606-637ba581b/configs/mt7981_360t7_defconfig b/atf-20220606-637ba581b/configs/mt7981_360t7_defconfig
+index 6378231f50d..ba0306d2842 100644
+--- a/atf-20220606-637ba581b/configs/mt7981_360t7_defconfig
++++ b/atf-20220606-637ba581b/configs/mt7981_360t7_defconfig
+@@ -1,5 +1,5 @@
+ CONFIG_PLAT_MT7981=y
+-CONFIG_TARGET_FIP_NO_SEC_BOOT=y
++CONFIG_TARGET_ALL_NO_SEC_BOOT=y
+ CONFIG_FLASH_DEVICE_SPIM_NAND=y
+ CONFIG_BGA=y
+ CONFIG_LOG_LEVEL_INFO=y
+diff --git a/atf-20220606-637ba581b/configs/mt7981_cmcc_rax3000m-emmc_defconfig b/atf-20220606-637ba581b/configs/mt7981_cmcc_rax3000m-emmc_defconfig
+index 6063debe882..d5238dee9f5 100644
+--- a/atf-20220606-637ba581b/configs/mt7981_cmcc_rax3000m-emmc_defconfig
++++ b/atf-20220606-637ba581b/configs/mt7981_cmcc_rax3000m-emmc_defconfig
+@@ -1,5 +1,5 @@
+ CONFIG_PLAT_MT7981=y
+-CONFIG_TARGET_FIP_NO_SEC_BOOT=y
++CONFIG_TARGET_ALL_NO_SEC_BOOT=y
+ CONFIG_FLASH_DEVICE_EMMC=y
+ CONFIG_BGA=y
+ CONFIG_LOG_LEVEL_NONE=y
+diff --git a/atf-20220606-637ba581b/configs/mt7981_cmcc_rax3000m_defconfig b/atf-20220606-637ba581b/configs/mt7981_cmcc_rax3000m_defconfig
+index d1951deed31..583828a1054 100644
+--- a/atf-20220606-637ba581b/configs/mt7981_cmcc_rax3000m_defconfig
++++ b/atf-20220606-637ba581b/configs/mt7981_cmcc_rax3000m_defconfig
+@@ -1,6 +1,6 @@
+ CONFIG_PLAT_MT7981=y
+ CONFIG_DRAM_DDR4=y
+-CONFIG_TARGET_FIP_NO_SEC_BOOT=y
++CONFIG_TARGET_ALL_NO_SEC_BOOT=y
+ CONFIG_FLASH_DEVICE_SPIM_NAND=y
+ CONFIG_BGA=y
+ CONFIG_LOG_LEVEL_INFO=y
+diff --git a/atf-20220606-637ba581b/plat/mediatek/mt7981/drivers/pll/pll.c b/atf-20220606-637ba581b/plat/mediatek/mt7981/drivers/pll/pll.c
+index 588aacf2228..1ac9cf9f8a9 100644
 --- a/atf-20220606-637ba581b/plat/mediatek/mt7981/drivers/pll/pll.c
 +++ b/atf-20220606-637ba581b/plat/mediatek/mt7981/drivers/pll/pll.c
 @@ -70,8 +70,14 @@ unsigned int mtk_get_cpu_freq()
@@ -62,6 +113,8 @@
  	mmio_write_32(0x1001B1C4, 0x3);
  }
 +
+diff --git a/atf-20220606-637ba581b/plat/mediatek/mt7981/drivers/pll/pll.h b/atf-20220606-637ba581b/plat/mediatek/mt7981/drivers/pll/pll.h
+index 498c00f4172..e8504f8322f 100644
 --- a/atf-20220606-637ba581b/plat/mediatek/mt7981/drivers/pll/pll.h
 +++ b/atf-20220606-637ba581b/plat/mediatek/mt7981/drivers/pll/pll.h
 @@ -64,7 +64,8 @@
@@ -74,6 +127,8 @@
  #define SCP_AXICK_DCM_DIS_EN	BIT(0)
  #define SCP_AXICK_26M_SEL_EN	BIT(4)
  
+diff --git a/atf-20231013-0ea67d76a/plat/mediatek/mt7981/drivers/pll/pll.c b/atf-20231013-0ea67d76a/plat/mediatek/mt7981/drivers/pll/pll.c
+index 588aacf2228..1ac9cf9f8a9 100644
 --- a/atf-20231013-0ea67d76a/plat/mediatek/mt7981/drivers/pll/pll.c
 +++ b/atf-20231013-0ea67d76a/plat/mediatek/mt7981/drivers/pll/pll.c
 @@ -70,8 +70,14 @@ unsigned int mtk_get_cpu_freq()
@@ -138,6 +193,8 @@
  	mmio_write_32(0x1001B1C4, 0x3);
  }
 +
+diff --git a/atf-20231013-0ea67d76a/plat/mediatek/mt7981/drivers/pll/pll.h b/atf-20231013-0ea67d76a/plat/mediatek/mt7981/drivers/pll/pll.h
+index 498c00f4172..e8504f8322f 100644
 --- a/atf-20231013-0ea67d76a/plat/mediatek/mt7981/drivers/pll/pll.h
 +++ b/atf-20231013-0ea67d76a/plat/mediatek/mt7981/drivers/pll/pll.h
 @@ -64,7 +64,8 @@
@@ -149,32 +206,4 @@
 +#define ARMPLL_CON1_ALL0        0xFF000000
  #define SCP_AXICK_DCM_DIS_EN	BIT(0)
  #define SCP_AXICK_26M_SEL_EN	BIT(4)
- 
---- a/atf-20240117-bacca82a8/plat/mediatek/mt7981/drivers/pll/pll.c
-+++ b/atf-20240117-bacca82a8/plat/mediatek/mt7981/drivers/pll/pll.c
-@@ -94,11 +94,20 @@ void mtk_pll_init(int skip_dcm_setting)
- 	mmio_clrbits_32(MPLL_PWR_CON0, CON0_ISO_EN);
- 
- 	/* Set PLL frequency */
--	mmio_write_32(ARMPLL_CON1, 0x82000000); /* 1.3G */
--
--	//mmio_setbits_32(ARMPLL_CON0, 0x124); /* divider for 650M */
--
--	mmio_setbits_32(ARMPLL_CON0, 0x114); /* divider for 1.3G */
-+	// 251218: overclock hack
-+	NOTICE("THIS IS AN OVERCLOKING BL2!\n");
-+	NOTICE("set arm freq to 1.60 GHz:\n");
-+
-+	// mmio_write_32(ARMPLL_CON1, 0x82000000); /* 1.3G */
-+	mmio_write_32(ARMPLL_CON1, 0x50000000); /* 1.6G */
-+	// mmio_write_32(ARMPLL_CON1, 0x55000000); /* 1.7G */
-+	NOTICE("ARMPLL_CON1 = 0x%x\n", mmio_read_32(ARMPLL_CON1));
-+
-+	// mmio_setbits_32(ARMPLL_CON0, 0x124); /* divider for 650M */
-+	// mmio_setbits_32(ARMPLL_CON0, 0x114); /* divider for 1.3G */
-+	mmio_clrbits_32(ARMPLL_CON0, 0x70); /* divider for >1.3G */
-+	mmio_setbits_32(ARMPLL_CON0, 0x104);
-+	NOTICE("ARMPLL_CON0 = 0x%x\n", mmio_read_32(ARMPLL_CON0));
- 
- 	mmio_setbits_32(NET2PLL_CON0, 0x114);
- 	mmio_setbits_32(MMPLL_CON0, 0x124);
+  
