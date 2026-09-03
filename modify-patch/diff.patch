@@ -208,14 +208,19 @@
  	}
 
  	printf("\n");
---- a/uboot-mtk-20220606/configs/mt7981_ax3000t_defconfig
-+++ b/uboot-mtk-20220606/configs/mt7981_ax3000t_defconfig
-@@ -46,7 +46,7 @@ CONFIG_CMD_LED_BLINK=y
- CONFIG_CMD_SMC=y
- CONFIG_CMD_MTDPARTS=y
- CONFIG_MTDIDS_DEFAULT="nmbm0=nmbm0"
--CONFIG_MTDPARTS_DEFAULT="nmbm0:1024k(bl2),256k(Nvram),256k(Bdata),2048k(factory),2048k(fip),256k(crash),256k(crash_log),112m(ubi),256k(KF)"
-+CONFIG_MTDPARTS_DEFAULT="nmbm0:1024k(bl2),256k(Nvram),256k(Bdata),2048k(factory),2048k(fip),256k(crash),256k(crash_log),100m(ubi),12m(data),256k(KF)"
- CONFIG_CMD_UBI=y
- CONFIG_CMD_GL_BTN=y
- CONFIG_CMD_SHOW_MTD_LAYOUT=y
+--- a/uboot-mtk-20220606/arch/arm/dts/mt7981-ax3000t.dts
++++ b/uboot-mtk-20220606/arch/arm/dts/mt7981-ax3000t.dts
+@@ -40,13 +40,6 @@
+ 			mtdids = "nmbm0=nmbm0";
+ 			mtdparts = "nmbm0:1024k(bl2),256k(Nvram),256k(Bdata),2048k(factory),2048k(fip),256k(crash),256k(crash_log),112m(ubi),256k(KF)";
+ 		};
+-
+-		layout@2 {
+-			label = "qwrt";
+-			// mtd layout for lean qwrt
+-			mtdids = "nmbm0=nmbm0";
+-			mtdparts = "nmbm0:1024k(bl2),256k(Nvram),256k(Bdata),2048k(factory),2048k(fip),256k(crash),256k(crash_log),100m(ubi),12m(data),256k(KF)";
+-		};
+ 	};
+
+ 	gpio-keys {
