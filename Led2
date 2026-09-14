@@ -20,7 +20,7 @@ define Package/led-mt7531
   SECTION:=utils
   CATEGORY:=Utilities
   TITLE:=Cudy WR3000S MT7531 LED Control
-  DEPENDS:=+mdio
+  DEPENDS:=+mdio-tools
 endef
 
 define Package/led-mt7531/description
