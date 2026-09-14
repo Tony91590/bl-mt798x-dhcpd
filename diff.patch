@@ -412,7 +412,7 @@
 -	"      env glbtn_gpio: comma-separated GPIO names for direct GPIO check"
 +	""
  );
- --- a/uboot-mtk-20250711/cmd/glbtn.c
+--- a/uboot-mtk-20250711/cmd/glbtn.c
 +++ b/uboot-mtk-20250711/cmd/glbtn.c
 @@ -49,8 +49,14 @@
  static int do_glbtn(struct cmd_tbl *cmdtp, int flag, int argc, char *const argv[])
