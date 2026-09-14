@@ -56,7 +56,6 @@
 			gpios = <&pio 11 GPIO_ACTIVE_LOW>;
 		};
 	};
-};
 
 	bl2_verify {
 		bl2_compatible = "spim-nand";
