@@ -113,7 +113,7 @@
 +CONFIG_MTK_BOOTMENU_UBI=y
 --- /dev/null
 +++ b/arch/arm/dts/mt7981-cudy-wr3000s-v1.dts
-@@ -0,0 +1,148 @@
+@@ -0,0 +1,132 @@
 +// SPDX-License-Identifier: GPL-2.0-or-later
 +
 +/dts-v1/;
