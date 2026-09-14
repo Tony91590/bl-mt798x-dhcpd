@@ -104,43 +104,6 @@
 		compatible = "spi-nand";
 		reg = <0>;
 		spi-max-frequency = <52000000>;
-
-		partitions {
-			compatible = "fixed-partitions";
-			#address-cells = <1>;
-			#size-cells = <1>;
-
-			partition@0 {
-				label = "bl2";
-				reg = <0x0 0x100000>;
-			};
-
-			partition@100000 {
-				label = "u-boot-env";
-				reg = <0x100000 0x80000>;
-			};
-
-			partition@180000 {
-				label = "factory";
-				reg = <0x180000 0x200000>;
-			};
-
-			partition@380000 {
-				label = "bdinfo";
-				reg = <0x380000 0x40000>;
-			};
-
-			partition@3c0000 {
-				label = "fip";
-				reg = <0x3c0000 0x200000>;
-			};
-
-			partition@5c0000 {
-				label = "ubi";
-				reg = <0x5c0000 0x7a40000>;
-				compatible = "linux,ubi";
-			};
-		};
 	};
 };
 
