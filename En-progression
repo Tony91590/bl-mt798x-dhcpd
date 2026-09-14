@@ -58,6 +58,11 @@
 	};
 };
 
+	bl2_verify {
+		bl2_compatible = "spim-nand";
+	};
+};
+
 &eth {
 	status = "okay";
 	mediatek,gmac-id = <0>;
