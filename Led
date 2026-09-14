@@ -1,0 +1,144 @@
+# ============================================================
+# CUDY WR3000S - MT7531 LED CONTROL
+# ============================================================
+
+# Default configuration
+mkdir -p "$TARGET_DIR/etc/config"
+
+cat > "$TARGET_DIR/etc/config/led-mt7531" <<'EOF'
+0x0009
+EOF
+
+
+# ------------------------------------------------------------
+# Service automatically applied at boot
+# ------------------------------------------------------------
+
+mkdir -p "$TARGET_DIR/etc/init.d"
+
+cat > "$TARGET_DIR/etc/init.d/led-mt7531" <<'EOF'
+#!/bin/sh /etc/rc.common
+
+START=99
+
+CONFIG="/etc/config/led-mt7531"
+
+start() {
+    [ -f "$CONFIG" ] || return 0
+
+    VALUE="$(cat "$CONFIG")"
+
+    case "$VALUE" in
+        0x0008|0x0009|0x000b)
+            sleep 3
+            /usr/bin/mdio mt7530-0 0:0x1f raw 0x21 "$VALUE"
+            ;;
+    esac
+}
+
+EOF
+
+chmod 755 "$TARGET_DIR/etc/init.d/led-mt7531"
+
+
+# ------------------------------------------------------------
+# SSH menu
+# ------------------------------------------------------------
+
+mkdir -p "$TARGET_DIR/usr/bin"
+
+cat > "$TARGET_DIR/usr/bin/led-mt7531" <<'EOF'
+#!/bin/sh
+
+MDIO="/usr/bin/mdio"
+CONFIG="/etc/config/led-mt7531"
+
+echo ""
+echo "========================================"
+echo "       CUDY WR3000S - ETHERNET LED"
+echo "========================================"
+echo ""
+
+CURRENT="$(cat "$CONFIG" 2>/dev/null)"
+
+case "$CURRENT" in
+    0x0009)
+        echo "Current setting: LED ON when cable is connected"
+        ;;
+    0x0008)
+        echo "Current setting: LED always OFF"
+        ;;
+    0x000b)
+        echo "Current setting: LED blinking"
+        ;;
+    *)
+        echo "Current setting: Unknown"
+        ;;
+esac
+
+echo ""
+echo "1) LED ON when cable is connected   [0x0009]"
+echo "2) LED always OFF                   [0x0008]"
+echo "3) LED blinking                     [0x000b]"
+echo "4) Exit"
+echo ""
+
+printf "Select an option [1-4]: "
+read choice
+
+case "$choice" in
+    1)
+        VALUE="0x0009"
+        TEXT="ON when cable is connected"
+        ;;
+    2)
+        VALUE="0x0008"
+        TEXT="always OFF"
+        ;;
+    3)
+        VALUE="0x000b"
+        TEXT="blinking"
+        ;;
+    4)
+        exit 0
+        ;;
+    *)
+        echo ""
+        echo "Invalid option."
+        exit 1
+        ;;
+esac
+
+echo ""
+echo "Applying setting: LED $TEXT"
+
+if "$MDIO" mt7530-0 0:0x1f raw 0x21 "$VALUE"; then
+    echo "$VALUE" > "$CONFIG"
+
+    echo ""
+    echo "========================================"
+    echo "OK - Configuration applied"
+    echo "Value: $VALUE"
+    echo "========================================"
+    echo ""
+    echo "This setting will be preserved after reboot."
+else
+    echo ""
+    echo "ERROR: Unable to apply the setting."
+    exit 1
+fi
+EOF
+
+chmod 755 "$TARGET_DIR/usr/bin/led-mt7531"
+
+
+# ------------------------------------------------------------
+# Enable service at boot
+# ------------------------------------------------------------
+
+"$TARGET_DIR/etc/init.d/led-mt7531" enable
+
+
+# ============================================================
+# END - WR3000S MT7531 LED CONTROL
+# ============================================================
