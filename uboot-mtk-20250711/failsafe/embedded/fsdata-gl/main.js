@@ -69,20 +69,12 @@ function getmtdlayoutlist() {
 }
 
 function getversion() {
-    var versionElem = document.getElementById("version");
     ajax({
         url: '/version',
-        done: function (version) {
-            if (!versionElem) return;
-            versionElem.innerHTML = version + ' 💡Yuzhii';
+        done: function(version) {
+            document.getElementById('version').innerHTML = version
         }
     })
-    if (versionElem) {
-        var projectInfo = document.createElement("div");
-        projectInfo.id = "project-info";
-        projectInfo.innerHTML = 'You can find more infomation about this project: <a href="https://github.com/Yuzhii0718/bl-mt798x-dhcpd" target="_blank">Github</a>';
-        versionElem.parentNode.insertBefore(projectInfo, versionElem.nextSibling);
-    }
 }
 
 function upload(name) {
