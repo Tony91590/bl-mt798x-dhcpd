@@ -143,7 +143,7 @@ config WEBUI_FAILSAFE_ENV_DEFAULT_GLBTN_KEY
 	depends on WEBUI_FAILSAFE_ENV && CMD_GL_BTN
 	help
 	  When enabled, failsafe environment API will automatically create
-	  and persist glbtn_key=reset,wps,mesh if glbtn_key does not exist.
+	  and persist glbtn_key=reset,mesh if glbtn_key does not exist.
 	  Existing glbtn_key values are never overwritten.
 
 config WEBUI_FAILSAFE_FACTORY
