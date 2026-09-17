@@ -107,7 +107,7 @@ static void failsafe_env_ensure_default_glbtn_key(void)
 	ret = env_set("glbtn_key", "reset,wps,mesh");
 	if (!ret) {
 		ret = env_save();
-		printf("Set default glbtn_key env to 'reset,wps,mesh'\n");
+		printf("Set default glbtn_key env to 'reset,mesh'\n");
 	}
 
 	if (ret)
