@@ -469,37 +469,35 @@ jobs:
         }
 
 
-        # Patch defconfig for ATF 22/23 versions
+        # Patch defconfig for ATF22 only
 
-          atf_dir="${{ env.atf22 }}"
-          
-          echo "Checking ATF dir: $atf_dir"
+        atf_dir="${{ env.atf22 }}"
 
-
-          DEFCONF=$(find "${atf_dir}/configs" \
-            -type f \
-            -name "mt798*_${MODEL}_defconfig" \
-            -print -quit)
+        echo "Checking ATF dir: $atf_dir"
 
 
-          if [ -n "$DEFCONF" ]; then
+        DEFCONF=$(find "${atf_dir}/configs" \
+          -type f \
+          -name "mt798*_${MODEL}_defconfig" \
+          -print -quit)
 
-            echo "Found defconfig: $DEFCONF"
+
+        if [ -n "$DEFCONF" ]; then
+
+          echo "Found defconfig: $DEFCONF"
 
 
-            if try_patch_defconfig "$DEFCONF"; then
+          if try_patch_defconfig "$DEFCONF"; then
 
-              echo "Successfully patched defconfig file: $DEFCONF"
-
-            fi
-
-          else
-
-            echo "Warning: defconfig not found for $atf_dir"
+            echo "Successfully patched defconfig file: $DEFCONF"
 
           fi
 
-        done
+        else
+
+          echo "Warning: defconfig not found for $atf_dir"
+
+        fi
 
 
         echo "status=success" >> "$GITHUB_OUTPUT"
