@@ -471,10 +471,8 @@ jobs:
 
         # Patch defconfig for ATF 22/23 versions
 
-        for atf_dir in \
-          "${{ env.atf22 }}" \
-          "${{ env.atf23 }}"; do
-
+          atf_dir="${{ env.atf22 }}"
+          
           echo "Checking ATF dir: $atf_dir"
 
 
