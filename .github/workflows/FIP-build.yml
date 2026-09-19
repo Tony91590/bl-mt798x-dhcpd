@@ -440,7 +440,8 @@ jobs:
         cd bl-mt798x-dhcpd
 
         MODEL="${{ github.event.inputs.MODEL }}"
-        DEFCONF="mt7986_${MODEL}_defconfig"
+        DEFCONF=$(find "${{ env.atf22 }}/configs" "${{ env.atf23 }}/configs" \
+        -type f -name "mt798*_${MODEL}_defconfig" -print -quit)
 
         try_patch_defconfig() {
           local path="$1"
