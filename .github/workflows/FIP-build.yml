@@ -435,26 +435,31 @@ jobs:
     - name: ATF22/23 BL2 generation config patch
       if: github.event.inputs.GEN_BL2 == 'true' && !cancelled()
       run: |
+
         set -euo pipefail
 
         cd bl-mt798x-dhcpd
 
         MODEL="${{ github.event.inputs.MODEL }}"
-        DEFCONF=$(find "${{ env.atf22 }}/configs" "${{ env.atf23 }}/configs" \
-        -type f -name "mt798*_${MODEL}_defconfig" -print -quit)
+
 
         try_patch_defconfig() {
           local path="$1"
 
           if [ -f "$path" ]; then
+
             if grep -q '^CONFIG_TARGET_FIP_NO_SEC_BOOT=y$' "$path"; then
+
               sed -i \
                 's/^CONFIG_TARGET_FIP_NO_SEC_BOOT=y$/CONFIG_TARGET_ALL_NO_SEC_BOOT=y/' \
                 "$path"
 
               echo "Patched: $path"
+
             else
+
               echo "Skip (no target line): $path"
+
             fi
 
             return 0
@@ -463,22 +468,45 @@ jobs:
           return 1
         }
 
+
         # Patch defconfig for ATF 22/23 versions
+
         for atf_dir in \
           "${{ env.atf22 }}" \
           "${{ env.atf23 }}"; do
 
           echo "Checking ATF dir: $atf_dir"
 
-          if try_patch_defconfig "${atf_dir}/configs/${DEFCONF}"; then
-            echo "Successfully patched defconfig file: ${atf_dir}/configs/${DEFCONF}"
+
+          DEFCONF=$(find "${atf_dir}/configs" \
+            -type f \
+            -name "mt798*_${MODEL}_defconfig" \
+            -print -quit)
+
+
+          if [ -n "$DEFCONF" ]; then
+
+            echo "Found defconfig: $DEFCONF"
+
+
+            if try_patch_defconfig "$DEFCONF"; then
+
+              echo "Successfully patched defconfig file: $DEFCONF"
+
+            fi
+
           else
+
             echo "Warning: defconfig not found for $atf_dir"
+
           fi
+
         done
 
-        echo "status=success" >> $GITHUB_OUTPUT
-        echo "GEN_BL2=1" >> $GITHUB_ENV
+
+        echo "status=success" >> "$GITHUB_OUTPUT"
+
+        echo "GEN_BL2=1" >> "$GITHUB_ENV"
 
     - name: Build FIP
       id: compile
