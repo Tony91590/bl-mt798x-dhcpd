@@ -16,7 +16,7 @@ on:
       MODEL:
         description: 'Model selection'
         required: true
-        default: 'ax3000t'
+        default: 'redmi_ax6000'
         type: string
 
       FIP_VERSION:
@@ -40,7 +40,7 @@ on:
       EXTRA_OPTION:
         description: 'Extra option'
         required: false
-        default: 'multi_layout'
+        default: 'default'
         type: choice
         options:
           - default
