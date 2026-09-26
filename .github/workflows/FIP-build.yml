@@ -34,7 +34,7 @@ on:
       REPO_BRANCH:
         description: 'Repository branch'
         required: true
-        default: 'old'
+        default: 'ollwin'
         type: string
 
       EXTRA_OPTION:
