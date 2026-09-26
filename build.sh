@@ -4,7 +4,7 @@ TOOLCHAIN=aarch64-linux-gnu-
 
 # Default selection
 VERSION=${VERSION:-2024}
-FSTHEME=${FSTHEME:-mtk}
+FSTHEME=${FSTHEME:-gl}
 fixedparts=${FIXED_MTDPARTS:-1}
 multilayout=${MULTI_LAYOUT:-0}
 
